@@ -871,3 +871,4 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
     </div>
   )
 }
+

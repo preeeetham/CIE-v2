@@ -412,298 +412,316 @@ export function LabComponentsRequest() {
 
         <TabsContent value="available" className="space-y-3">
           <div className="flex items-center space-x-4">
-            <div className="w-80">
-              <Input placeholder="Search components..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <div className="w-80 relative">
+              <Input
+                placeholder="Search components..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
+              </span>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {filteredComponents.map((component) => (
-              <Card key={component.id} className="flex flex-col h-full hover:shadow-md transition-shadow duration-200">
-                <CardHeader className="p-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="flex items-center space-x-2 text-sm">
-                        <Package className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{component.component_name}</span>
-                      </CardTitle>
-                      <CardDescription className="text-xs">{component.component_category}</CardDescription>
+            {filteredComponents.length === 0 ? (
+              <Card className="col-span-full">
+                <CardContent className="p-6 text-center">
+                  <Package className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <h3 className="font-medium text-gray-900 mb-1">No components available</h3>
+                  <p className="text-sm text-gray-600">There are currently no lab components available for request.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredComponents.map((component) => (
+                <Card key={component.id} className="flex flex-col h-full hover:shadow-md transition-shadow duration-200">
+                  <CardHeader className="p-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="flex items-center space-x-2 text-sm">
+                          <Package className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{component.component_name}</span>
+                        </CardTitle>
+                        <CardDescription className="text-xs">{component.component_category}</CardDescription>
+                      </div>
+                      <Badge className={`${getAvailabilityColor(component.available_quantity, component.component_quantity)} text-xs px-1 py-0.5 ml-2 flex-shrink-0`}>
+                        {getAvailabilityText(component.available_quantity, component.component_quantity)}
+                      </Badge>
                     </div>
-                    <Badge className={`${getAvailabilityColor(component.available_quantity, component.component_quantity)} text-xs px-1 py-0.5 ml-2 flex-shrink-0`}>
-                      {getAvailabilityText(component.available_quantity, component.component_quantity)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow flex flex-col p-3 pt-0">
-                  <div className="space-y-3 flex-grow">
-                    {/* Image Display */}
-                    {(component.image_url || component.back_image_url) && (
-                      <div className="relative w-full h-32">
-                        {/* Front Image */}
-                        <div 
-                          className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${
-                            imageStates[component.id] ? 'opacity-0' : 'opacity-100'
-                          }`}
-                        >
-                          <img
-                            src={component.image_url || '/placeholder.jpg'}
-                            alt={`Front view of ${component.component_name}`}
-                            className="w-full h-full object-contain rounded-md bg-gray-50"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.jpg"
-                            }}
-                          />
-                        </div>
-                        
-                        {/* Back Image */}
-                        {component.back_image_url && (
+                  </CardHeader>
+                  <CardContent className="flex-grow flex flex-col p-3 pt-0">
+                    <div className="space-y-3 flex-grow">
+                      {/* Image Display */}
+                      {(component.image_url || component.back_image_url) && (
+                        <div className="relative w-full h-32">
+                          {/* Front Image */}
                           <div 
                             className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${
-                              imageStates[component.id] ? 'opacity-100' : 'opacity-0'
+                              imageStates[component.id] ? 'opacity-0' : 'opacity-100'
                             }`}
                           >
                             <img
-                              src={component.back_image_url}
-                              alt={`Back view of ${component.component_name}`}
+                              src={component.image_url || '/placeholder.jpg'}
+                              alt={`Front view of ${component.component_name}`}
                               className="w-full h-full object-contain rounded-md bg-gray-50"
                               onError={(e) => {
                                 e.currentTarget.src = "/placeholder.jpg"
                               }}
                             />
                           </div>
-                        )}
-                        
-                        {/* Navigation Buttons */}
-                        {component.back_image_url && (
-                          <>
-                            {!imageStates[component.id] && (
-                              <Button
-                                variant="secondary"
-                                size="icon"
-                                className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/80 hover:bg-white shadow-sm z-10"
-                                onClick={() => setImageStates(prev => ({ ...prev, [component.id]: true }))}
-                              >
-                                <ChevronRight className="h-3 w-3" />
-                              </Button>
-                            )}
-                            {imageStates[component.id] && (
-                              <Button
-                                variant="secondary"
-                                size="icon"
-                                className="absolute left-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/80 hover:bg-white shadow-sm z-10"
-                                onClick={() => setImageStates(prev => ({ ...prev, [component.id]: false }))}
-                              >
-                                <ChevronLeft className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </>
-                        )}
+                          
+                          {/* Back Image */}
+                          {component.back_image_url && (
+                            <div 
+                              className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${
+                                imageStates[component.id] ? 'opacity-100' : 'opacity-0'
+                              }`}
+                            >
+                              <img
+                                src={component.back_image_url}
+                                alt={`Back view of ${component.component_name}`}
+                                className="w-full h-full object-contain rounded-md bg-gray-50"
+                                onError={(e) => {
+                                  e.currentTarget.src = "/placeholder.jpg"
+                                }}
+                              />
+                            </div>
+                          )}
+                          
+                          {/* Navigation Buttons */}
+                          {component.back_image_url && (
+                            <>
+                              {!imageStates[component.id] && (
+                                <Button
+                                  variant="secondary"
+                                  size="icon"
+                                  className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/80 hover:bg-white shadow-sm z-10"
+                                  onClick={() => setImageStates(prev => ({ ...prev, [component.id]: true }))}
+                                >
+                                  <ChevronRight className="h-3 w-3" />
+                                </Button>
+                              )}
+                              {imageStates[component.id] && (
+                                <Button
+                                  variant="secondary"
+                                  size="icon"
+                                  className="absolute left-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/80 hover:bg-white shadow-sm z-10"
+                                  onClick={() => setImageStates(prev => ({ ...prev, [component.id]: false }))}
+                                >
+                                  <ChevronLeft className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </>
+                          )}
 
-                        {/* Image Indicator */}
-                        {component.back_image_url && (
-                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1 z-10">
-                            <div 
-                              className={`w-1 h-1 rounded-full transition-colors duration-300 ${
-                                !imageStates[component.id] ? 'bg-white' : 'bg-white/50'
-                              }`}
-                            />
-                            <div 
-                              className={`w-1 h-1 rounded-full transition-colors duration-300 ${
-                                imageStates[component.id] ? 'bg-white' : 'bg-white/50'
-                              }`}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-xs text-gray-600 line-clamp-2">{component.component_description}</p>
-                      </div>
+                          {/* Image Indicator */}
+                          {component.back_image_url && (
+                            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1 z-10">
+                              <div 
+                                className={`w-1 h-1 rounded-full transition-colors duration-300 ${
+                                  !imageStates[component.id] ? 'bg-white' : 'bg-white/50'
+                                }`}
+                              />
+                              <div 
+                                className={`w-1 h-1 rounded-full transition-colors duration-300 ${
+                                  imageStates[component.id] ? 'bg-white' : 'bg-white/50'
+                                }`}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                       
-                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
-                        <div><span className="font-medium">Available:</span> {component.available_quantity}</div>
-                        <div><span className="font-medium">Total:</span> {component.component_quantity}</div>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500">
-                        <span className="font-medium">Location:</span> {component.component_location}
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-gray-600 line-clamp-2">{component.component_description}</p>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-700">
+                          <div><span className="font-medium">Available:</span> {component.available_quantity}</div>
+                          <div><span className="font-medium">Total:</span> {component.component_quantity}</div>
+                        </div>
+                        
+                        <div className="text-xs text-gray-500">
+                          <span className="font-medium">Location:</span> {component.component_location}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-3">
-                    <Dialog open={isRequestDialogOpen && selectedComponent?.id === component.id} onOpenChange={(isOpen) => {
-                      setIsRequestDialogOpen(isOpen)
-                      if (!isOpen) {
-                        setSelectedComponent(null)
-                      }
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          className="w-full h-8 text-xs"
-                          disabled={
-                            component.available_quantity === 0 || !hasApprovedProject(component)
-                          }
-                          onClick={() => setSelectedComponent(component)}
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          {component.available_quantity === 0
-                            ? "Out of Stock"
-                            : !hasApprovedProject(component)
-                              ? "No Approved Projects"
-                              : "Request"
-                          }
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-lg">
-                        {selectedComponent && (
-                          <>
-                            <DialogHeader>
-                              <DialogTitle>Request Component</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-6 py-4">
-                              {/* Top row: Name and Quantity */}
-                              <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
-                                <div className="flex-1 mb-2 md:mb-0">
-                                  <h2 className="text-xl font-bold text-gray-900">{selectedComponent.component_name}</h2>
-                                  <p className="text-sm text-gray-500">{selectedComponent.component_category}</p>
+                    <div className="mt-3">
+                      <Dialog open={isRequestDialogOpen && selectedComponent?.id === component.id} onOpenChange={(isOpen) => {
+                        setIsRequestDialogOpen(isOpen)
+                        if (!isOpen) {
+                          setSelectedComponent(null)
+                        }
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            className="w-full h-8 text-xs"
+                            disabled={
+                              component.available_quantity === 0 || !hasApprovedProject(component)
+                            }
+                            onClick={() => setSelectedComponent(component)}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            {component.available_quantity === 0
+                              ? "Out of Stock"
+                              : !hasApprovedProject(component)
+                                ? "No Approved Projects"
+                                : "Request"
+                            }
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                          {selectedComponent && (
+                            <>
+                              <DialogHeader>
+                                <DialogTitle>Request Component</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-6 py-4">
+                                {/* Top row: Name and Quantity */}
+                                <div className="flex flex-col md:flex-row md:items-center md:space-x-6">
+                                  <div className="flex-1 mb-2 md:mb-0">
+                                    <h2 className="text-xl font-bold text-gray-900">{selectedComponent.component_name}</h2>
+                                    <p className="text-sm text-gray-500">{selectedComponent.component_category}</p>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Label htmlFor="quantity" className="mb-0">Quantity *</Label>
+                                    <Input
+                                      id="quantity"
+                                      type="number"
+                                      value={newRequest.quantity}
+                                      onChange={(e) => setNewRequest((prev) => ({ ...prev, quantity: Number.parseInt(e.target.value) }))}
+                                      min="1"
+                                      max={selectedComponent.available_quantity || 1}
+                                      className="w-20 px-2 py-1 text-sm"
+                                    />
+                                    <span className="text-xs text-gray-500 ml-2">Available: {selectedComponent.available_quantity}</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <Label htmlFor="quantity" className="mb-0">Quantity *</Label>
-                                  <Input
-                                    id="quantity"
-                                    type="number"
-                                    value={newRequest.quantity}
-                                    onChange={(e) => setNewRequest((prev) => ({ ...prev, quantity: Number.parseInt(e.target.value) }))}
-                                    min="1"
-                                    max={selectedComponent.available_quantity || 1}
-                                    className="w-20 px-2 py-1 text-sm"
-                                  />
-                                  <span className="text-xs text-gray-500 ml-2">Available: {selectedComponent.available_quantity}</span>
-                                </div>
-                              </div>
-                              {/* Purpose textarea */}
-                              <div className="space-y-2">
-                                <Label htmlFor="purpose">Purpose *</Label>
-                                <Textarea
-                                  id="purpose"
-                                  value={newRequest.purpose}
-                                  onChange={(e) => setNewRequest((prev) => ({ ...prev, purpose: e.target.value }))}
-                                  placeholder="Describe how you plan to use this component..."
-                                  rows={5}
-                                  className="w-full text-base p-3 min-h-[120px] resize-vertical border border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
-                              </div>
-                              {/* Required date and project */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Purpose textarea */}
                                 <div className="space-y-2">
-                                  <Label htmlFor="required_date">Return Date *</Label>
-                                  <Input
-                                    id="required_date"
-                                    type="date"
-                                    value={newRequest.required_date}
-                                    onChange={(e) => setNewRequest((prev) => ({ ...prev, required_date: e.target.value }))}
-                                    min={new Date().toISOString().split("T")[0]}
-                                    className="text-base py-2 border-gray-200 rounded-lg"
+                                  <Label htmlFor="purpose">Purpose *</Label>
+                                  <Textarea
+                                    id="purpose"
+                                    value={newRequest.purpose}
+                                    onChange={(e) => setNewRequest((prev) => ({ ...prev, purpose: e.target.value }))}
+                                    placeholder="Describe how you plan to use this component..."
+                                    rows={5}
+                                    className="w-full text-base p-3 min-h-[120px] resize-vertical border border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                   />
                                 </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="project">Project *</Label>
-                                  <Select
-                                    value={newRequest.project_id}
-                                    onValueChange={(value) => setNewRequest((prev) => ({ ...prev, project_id: value }))}
-                                  >
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select a project" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {selectedComponent.projects.length > 0 ? (
-                                        selectedComponent.projects.map((componentProject) => {
-                                          const fullProject = projects.find(p => p.id === componentProject.id)
-                                          return (
-                                            <SelectItem
-                                              key={componentProject.id}
-                                              value={componentProject.id}
-                                              className={fullProject?.status !== "ONGOING" ? "opacity-50" : ""}
-                                            >
-                                              <div className="flex flex-col">
-                                                <div className="flex items-center gap-2">
-                                                  <span>{componentProject.name}</span>
-                                                  {fullProject?.status === "ONGOING" && (
-                                                    <Badge variant="outline" className="text-xs text-green-600 border-green-600">
-                                                      Available
-                                                    </Badge>
-                                                  )}
+                                {/* Required date and project */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="required_date">Return Date *</Label>
+                                    <Input
+                                      id="required_date"
+                                      type="date"
+                                      value={newRequest.required_date}
+                                      onChange={(e) => setNewRequest((prev) => ({ ...prev, required_date: e.target.value }))}
+                                      min={new Date().toISOString().split("T")[0]}
+                                      className="text-base py-2 border-gray-200 rounded-lg"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="project">Project *</Label>
+                                    <Select
+                                      value={newRequest.project_id}
+                                      onValueChange={(value) => setNewRequest((prev) => ({ ...prev, project_id: value }))}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select a project" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {selectedComponent.projects.length > 0 ? (
+                                          selectedComponent.projects.map((componentProject) => {
+                                            const fullProject = projects.find(p => p.id === componentProject.id)
+                                            return (
+                                              <SelectItem
+                                                key={componentProject.id}
+                                                value={componentProject.id}
+                                                className={fullProject?.status !== "ONGOING" ? "opacity-50" : ""}
+                                              >
+                                                <div className="flex flex-col">
+                                                  <div className="flex items-center gap-2">
+                                                    <span>{componentProject.name}</span>
+                                                    {fullProject?.status === "ONGOING" && (
+                                                      <Badge variant="outline" className="text-xs text-green-600 border-green-600">
+                                                        Available
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                  <span className={`text-xs ${getProjectStatusColor(componentProject.id)}`}>
+                                                    {getProjectStatusText(componentProject.id)}
+                                                  </span>
                                                 </div>
-                                                <span className={`text-xs ${getProjectStatusColor(componentProject.id)}`}>
-                                                  {getProjectStatusText(componentProject.id)}
-                                                </span>
-                                              </div>
-                                            </SelectItem>
-                                          )
-                                        })
-                                      ) : (
-                                        <div className="p-4 text-sm text-center text-gray-500">
-                                          No projects associated with this component.
-                                        </div>
+                                              </SelectItem>
+                                            )
+                                          })
+                                        ) : (
+                                          <div className="p-4 text-sm text-center text-gray-500">
+                                            No projects associated with this component.
+                                          </div>
+                                        )}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                {/* Action buttons */}
+                                <div className="flex justify-end space-x-2 pt-4">
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                      setIsRequestDialogOpen(false)
+                                      setSelectedComponent(null)
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span tabIndex={0}>
+                                          <Button
+                                            onClick={handleRequestComponent}
+                                            disabled={!canSubmitRequest()}
+                                            className={!canSubmitRequest() ? "opacity-50 cursor-not-allowed" : ""}
+                                          >
+                                            Submit Request
+                                          </Button>
+                                        </span>
+                                      </TooltipTrigger>
+                                      {!canSubmitRequest() && (
+                                        <TooltipContent>
+                                          <div className="max-w-xs">
+                                            {!isFormValid() && (
+                                              <p>Please fill in all required fields (quantity, purpose, required date, and project)</p>
+                                            )}
+                                            {isFormValid() && !isProjectApproved(newRequest.project_id) && (
+                                              <p>You can only request components for projects with "ONGOING" status (approved by faculty)</p>
+                                            )}
+                                            {selectedComponent.projects.length === 0 && (
+                                              <p>No projects are associated with this component.</p>
+                                            )}
+                                          </div>
+                                        </TooltipContent>
                                       )}
-                                    </SelectContent>
-                                  </Select>
+                                    </Tooltip>
+                                  </TooltipProvider>
                                 </div>
                               </div>
-                              {/* Action buttons */}
-                              <div className="flex justify-end space-x-2 pt-4">
-                                <Button
-                                  variant="outline"
-                                  onClick={() => {
-                                    setIsRequestDialogOpen(false)
-                                    setSelectedComponent(null)
-                                  }}
-                                >
-                                  Cancel
-                                </Button>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span tabIndex={0}>
-                                        <Button
-                                          onClick={handleRequestComponent}
-                                          disabled={!canSubmitRequest()}
-                                          className={!canSubmitRequest() ? "opacity-50 cursor-not-allowed" : ""}
-                                        >
-                                          Submit Request
-                                        </Button>
-                                      </span>
-                                    </TooltipTrigger>
-                                    {!canSubmitRequest() && (
-                                      <TooltipContent>
-                                        <div className="max-w-xs">
-                                          {!isFormValid() && (
-                                            <p>Please fill in all required fields (quantity, purpose, required date, and project)</p>
-                                          )}
-                                          {isFormValid() && !isProjectApproved(newRequest.project_id) && (
-                                            <p>You can only request components for projects with "ONGOING" status (approved by faculty)</p>
-                                          )}
-                                          {selectedComponent.projects.length === 0 && (
-                                            <p>No projects are associated with this component.</p>
-                                          )}
-                                        </div>
-                                      </TooltipContent>
-                                    )}
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                            </>
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
