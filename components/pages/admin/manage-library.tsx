@@ -17,7 +17,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Package, Trash2, RefreshCw, Edit, ChevronRight, ChevronLeft, Info, Receipt, History, Image } from "lucide-react"
+import { Plus, Package, Trash2, RefreshCw, Edit, ChevronRight, ChevronLeft, Info, Receipt, History, Image, Search, Filter } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -76,6 +76,9 @@ export function ManageLibrary() {
   const [loading, setLoading] = useState(true)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
+  const [filterCategory, setFilterCategory] = useState("all")
+  const [filterLocation, setFilterLocation] = useState("all")
+  const [filterAvailability, setFilterAvailability] = useState("all")
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<LibraryItem | null>(null)
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false)
@@ -142,6 +145,7 @@ export function ManageLibrary() {
           ...item,
           imageUrl: item.front_image_id ? `/library-images/${item.front_image_id}` : null,
           backImageUrl: item.back_image_id ? `/library-images/${item.back_image_id}` : null,
+          availableQuantity: item.availableQuantity ?? item.available_quantity ?? item.item_quantity,
         }))
       )
     } catch (error) {
@@ -191,12 +195,22 @@ export function ManageLibrary() {
     }
   };
 
-  const filteredItems = items.filter(
-    (item) =>
-      (item.item_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (item.item_category?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (item.item_location?.toLowerCase() || '').includes(searchTerm.toLowerCase()),
-  )
+  const filteredItems = items.filter((item) => {
+    const searchMatch =
+      (item.item_name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (item.item_category?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (item.item_location?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+
+    const categoryMatch = filterCategory === "all" || item.item_category === filterCategory
+    const locationMatch = filterLocation === "all" || item.item_location === filterLocation
+
+    const availabilityMatch =
+      filterAvailability === "all" ||
+      (filterAvailability === "available" && (item.availableQuantity ?? 0) > 0) ||
+      (filterAvailability === "out-of-stock" && (item.availableQuantity ?? 0) === 0)
+
+    return searchMatch && categoryMatch && locationMatch && availabilityMatch
+  })
 
   const handleAddItem = async () => {
     // Validate form before proceeding
@@ -899,6 +913,60 @@ export function ManageLibrary() {
           </Dialog>
         </div>
       </div>
+      {/* Search & Filters */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-64"
+          />
+        </div>
+
+        <Filter className="h-5 w-5 text-gray-500" />
+
+        <Select value={filterCategory} onValueChange={setFilterCategory}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {categoryOptions.map((c) => (
+              <SelectItem key={c} value={c}>{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div>
+          <Select value={filterLocation} onValueChange={setFilterLocation}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Location" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locationOptions.map((l) => (
+                <SelectItem key={l} value={l}>{l}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Select value={filterAvailability} onValueChange={setFilterAvailability}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Availability" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="out-of-stock">Out of Stock</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Inventory Tab */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredItems.length === 0 ? (

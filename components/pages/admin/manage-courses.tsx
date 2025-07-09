@@ -23,9 +23,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Plus, Trash2, BookOpen, Calendar, Users, RefreshCw, List, X } from "lucide-react"
+import { Plus, Trash2, BookOpen, Calendar, Users, RefreshCw, List, X, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 interface CourseUnit {
   id?: string
@@ -93,6 +94,7 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editCourse, setEditCourse] = useState<Course | null>(null)
   const [editCourseUnits, setEditCourseUnits] = useState<CourseUnit[]>([])
+  const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchCourses()
@@ -218,11 +220,20 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
   }
 
   const handleDeleteCourse = async (courseId: string) => {
+    if (!user || !user.id) {
+      toast({
+        title: "Error",
+        description: "User not authenticated. Please log in again.",
+        variant: "destructive",
+      })
+      return
+    }
+    console.log('Attempting to delete course. User:', user)
     try {
       const response = await fetch(`/api/courses?id=${courseId}`, {
         method: "DELETE",
         headers: {
-          "x-user-id": user?.id || "",
+          "x-user-id": user.id,
         },
       })
 
@@ -233,13 +244,14 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
           description: "Course deleted successfully",
         })
       } else {
-        throw new Error("Failed to delete course")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete course")
       }
     } catch (error) {
       console.error("Error deleting course:", error)
       toast({
         title: "Error",
-        description: "Failed to delete course",
+        description: error instanceof Error ? error.message : "Failed to delete course",
         variant: "destructive",
       })
     }
@@ -336,7 +348,7 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
       <div className="flex items-center justify-center h-64">
         <div className="text-lg">Loading course data...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -359,19 +371,18 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
                 Add Course
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>Add New Course</DialogTitle>
                 <DialogDescription>
                   Create a new course with its units and details
                 </DialogDescription>
               </DialogHeader>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Course Form */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Course Details</h3>
-                  <div className="space-y-4">
+              <div className="flex flex-col gap-8 flex-1 overflow-y-auto">
+                {/* Course Details Section */}
+                <div className="bg-gray-50 rounded-lg p-6 shadow-sm border">
+                  <h3 className="text-lg font-semibold mb-4">Course Details</h3>
+                  <div className="grid grid-cols-1 gap-6">
                     <div>
                       <Label htmlFor="course_code">Course Code</Label>
                       <Input
@@ -401,57 +412,49 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
                         rows={3}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="course_start_date">Start Date</Label>
-                        <Input
-                          id="course_start_date"
-                          type="date"
-                          value={newCourse.course_start_date}
-                          onChange={(e) => setNewCourse(prev => ({ ...prev, course_start_date: e.target.value }))}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="course_end_date">End Date</Label>
-                        <Input
-                          id="course_end_date"
-                          type="date"
-                          value={newCourse.course_end_date}
-                          onChange={(e) => setNewCourse(prev => ({ ...prev, course_end_date: e.target.value }))}
-                        />
-                      </div>
+                    <div>
+                      <Label htmlFor="course_start_date">Start Date</Label>
+                      <Input
+                        id="course_start_date"
+                        type="date"
+                        value={newCourse.course_start_date}
+                        onChange={(e) => setNewCourse(prev => ({ ...prev, course_start_date: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="course_end_date">End Date</Label>
+                      <Input
+                        id="course_end_date"
+                        type="date"
+                        value={newCourse.course_end_date}
+                        onChange={(e) => setNewCourse(prev => ({ ...prev, course_end_date: e.target.value }))}
+                      />
                     </div>
                   </div>
                 </div>
-
-                {/* Course Units Form */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
+                {/* Course Units Section */}
+                <div className="bg-gray-50 rounded-lg p-6 shadow-sm border">
+                  <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Course Units</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={handleAddUnit}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Unit
-                    </Button>
                   </div>
-                  
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                  <div className="flex flex-col gap-6">
                     {courseUnits.map((unit, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium">Unit {unit.unit_number}</h4>
-                          {courseUnits.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveUnit(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
+                      <div key={index} className="border rounded-lg p-4 bg-white shadow-sm relative">
+                        {courseUnits.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2"
+                            onClick={() => handleRemoveUnit(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <div className="flex items-center mb-2">
+                          <h4 className="font-medium text-base">Unit {unit.unit_number}</h4>
                         </div>
-                        
-                        <div className="space-y-3">
+                        <div className="grid grid-cols-1 gap-4">
                           <div>
                             <Label htmlFor={`unit_name_${index}`}>Unit Name</Label>
                             <Input
@@ -471,42 +474,47 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
                               rows={2}
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <Label htmlFor={`hours_per_unit_${index}`}>Duration (hours)</Label>
-                              <Input
-                                id={`hours_per_unit_${index}`}
-                                type="number"
-                                min="1"
-                                value={unit.hours_per_unit}
-                                onChange={(e) => handleUnitChange(index, 'hours_per_unit', parseInt(e.target.value) || 1)}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor={`assignment_count_${index}`}>Assignments</Label>
-                              <Input
-                                id={`assignment_count_${index}`}
-                                type="number"
-                                min="0"
-                                value={unit.assignment_count}
-                                onChange={(e) => handleUnitChange(index, 'assignment_count', parseInt(e.target.value) || 0)}
-                              />
-                            </div>
+                          <div>
+                            <Label htmlFor={`hours_per_unit_${index}`}>Duration (hours)</Label>
+                            <Input
+                              id={`hours_per_unit_${index}`}
+                              type="number"
+                              min="1"
+                              value={unit.hours_per_unit}
+                              onChange={(e) => handleUnitChange(index, 'hours_per_unit', parseInt(e.target.value) || 1)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor={`assignment_count_${index}`}>Assignments</Label>
+                            <Input
+                              id={`assignment_count_${index}`}
+                              type="number"
+                              min="0"
+                              value={unit.assignment_count}
+                              onChange={(e) => handleUnitChange(index, 'assignment_count', parseInt(e.target.value) || 0)}
+                            />
                           </div>
                         </div>
-                      </Card>
+                      </div>
                     ))}
                   </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full mt-6"
+                    onClick={handleAddUnit}
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add Unit
+                  </Button>
                 </div>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddCourse}>
-                  Create Course
-                </Button>
+                <div className="flex justify-end space-x-2 pt-6 bg-white sticky bottom-0 z-10 mt-4">
+                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddCourse}>
+                    Create Course
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -514,74 +522,120 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
       </div>
 
       <div className="flex items-center space-x-2">
-        <Input
-          placeholder="Search courses..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="relative w-full max-w-sm">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <Search className="h-4 w-4" />
+          </span>
+          <Input
+            placeholder="Search courses..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredCourses.length === 0 ? (
-          <Card className="col-span-2">
-            <CardContent className="p-8 text-center">
-              <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>
-              <p className="text-gray-600">Create your first course to get started.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          filteredCourses.map((course) => (
-            <Card key={course.id} className="rounded-xl shadow-sm border hover:shadow-md transition-shadow flex flex-col justify-between h-full">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <BookOpen className="h-4 w-4 text-gray-500" />
-                      <span className="text-xl font-bold text-gray-900 truncate">{course.course_name}</span>
+      <div className="w-full overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Course Name</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>End Date</TableHead>
+              <TableHead>Units</TableHead>
+              <TableHead>Enrollments</TableHead>
+              <TableHead>Created By</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCourses.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-8">
+                  <div className="flex flex-col items-center justify-center">
+                    <BookOpen className="h-12 w-12 text-gray-400 mb-2" />
+                    <div className="text-lg font-medium text-gray-900 mb-1">No courses found</div>
+                    <div className="text-gray-600">Create your first course to get started.</div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCourses.map((course) => [
+                <TableRow key={course.id} className="group">
+                  <TableCell className="font-bold">
+                    <button
+                      className={`mr-2 focus:outline-none ${course.course_units?.length ? '' : 'opacity-50 cursor-default'}`}
+                      onClick={() => course.course_units?.length && setExpandedCourseId(expandedCourseId === course.id ? null : course.id)}
+                      tabIndex={course.course_units?.length ? 0 : -1}
+                      aria-label={expandedCourseId === course.id ? 'Collapse units' : 'Expand units'}
+                      type="button"
+                      style={{ background: 'none', border: 'none', padding: 0 }}
+                    >
+                      {course.course_units?.length ? (
+                        <span className={`inline-block transition-transform ${expandedCourseId === course.id ? 'rotate-90' : ''}`}>▶</span>
+                      ) : null}
+                    </button>
+                    {course.course_name}
+                  </TableCell>
+                  <TableCell>{course.course_code}</TableCell>
+                  <TableCell className="max-w-xs truncate" title={course.course_description}>{course.course_description}</TableCell>
+                  <TableCell>{new Date(course.course_start_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(course.course_end_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{course.course_units?.length || 0}</TableCell>
+                  <TableCell>{course.course_enrollments?.length || 0}</TableCell>
+                  <TableCell>{course.creator?.name || 'Unknown User'}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => openEditDialog(course)}>
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => {
+                        setCourseToDelete(course)
+                        setIsDeleteDialogOpen(true)
+                      }}>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
                     </div>
-                    <CardDescription className="mt-1 text-gray-600 text-sm truncate">{course.course_description}</CardDescription>
-                  </div>
-                  <Badge variant="outline" className="ml-2 whitespace-nowrap">{course.course_units?.length || 0} Units</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-between">
-                <div className="space-y-2 mb-2">
-                  <div className="flex items-center space-x-4 text-sm text-gray-700">
-                    <span className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span>{new Date(course.course_start_date).toLocaleDateString()} - {new Date(course.course_end_date).toLocaleDateString()}</span>
-                    </span>
-                    <span className="flex items-center space-x-1">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span>{course.course_enrollments?.length || 0} enrolled • {course.course_code}</span>
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-end justify-between mt-4">
-                  <span className="text-xs text-gray-400">Created by: {course.creator?.name || 'Unknown User'}</span>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline" onClick={() => openUnitsSheet(course)}>
-                      <List className="h-4 w-4 mr-1" />
-                      View Units
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => {
-                      setCourseToDelete(course)
-                      setIsDeleteDialogOpen(true)
-                    }}>
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={() => openEditDialog(course)}>
-                      Edit
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+                  </TableCell>
+                </TableRow>,
+                expandedCourseId === course.id && course.course_units?.length ? (
+                  <TableRow key={course.id + '-units'} className="bg-gray-50">
+                    <TableCell colSpan={9} className="p-0">
+                      <div className="p-4">
+                        <div className="font-semibold mb-2">Units</div>
+                        <Table className="border">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>#</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Description</TableHead>
+                              <TableHead>Duration (hours)</TableHead>
+                              <TableHead>Assignments</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {course.course_units.map((unit, idx) => (
+                              <TableRow key={unit.id || idx}>
+                                <TableCell>{unit.unit_number}</TableCell>
+                                <TableCell>{unit.unit_name}</TableCell>
+                                <TableCell className="max-w-xs truncate" title={unit.unit_description}>{unit.unit_description}</TableCell>
+                                <TableCell>{unit.hours_per_unit}</TableCell>
+                                <TableCell>{unit.assignment_count}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : null
+              ])
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Course Units Sheet */}
@@ -619,7 +673,7 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
 
       {/* Edit Course Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Edit Course</DialogTitle>
             <DialogDescription>
@@ -627,105 +681,110 @@ export function ManageCourses({ facultyOnly }: ManageCoursesProps) {
             </DialogDescription>
           </DialogHeader>
           {editCourse && (
-            <div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Course Form */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Course Details</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="edit_course_code">Course Code</Label>
-                      <Input
-                        id="edit_course_code"
-                        value={editCourse.course_code}
-                        onChange={e => setEditCourse(prev => prev ? { ...prev, course_code: e.target.value.toUpperCase() } : prev)}
-                        maxLength={16}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit_course_name">Course Name</Label>
-                      <Input
-                        id="edit_course_name"
-                        value={editCourse.course_name}
-                        onChange={e => setEditCourse(prev => prev ? { ...prev, course_name: e.target.value } : prev)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit_course_description">Course Description</Label>
-                      <Textarea
-                        id="edit_course_description"
-                        value={editCourse.course_description}
-                        onChange={e => setEditCourse(prev => prev ? { ...prev, course_description: e.target.value } : prev)}
-                        rows={3}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="edit_course_start_date">Start Date</Label>
-                        <Input
-                          id="edit_course_start_date"
-                          type="date"
-                          value={editCourse.course_start_date}
-                          onChange={e => setEditCourse(prev => prev ? { ...prev, course_start_date: e.target.value } : prev)}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="edit_course_end_date">End Date</Label>
-                        <Input
-                          id="edit_course_end_date"
-                          type="date"
-                          value={editCourse.course_end_date}
-                          onChange={e => setEditCourse(prev => prev ? { ...prev, course_end_date: e.target.value } : prev)}
-                        />
-                      </div>
-                    </div>
+            <div className="flex flex-col gap-8 flex-1 overflow-y-auto">
+              {/* Course Details Section */}
+              <div className="bg-gray-50 rounded-lg p-6 shadow-sm border">
+                <h3 className="text-lg font-semibold mb-4">Course Details</h3>
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <Label htmlFor="edit_course_code">Course Code</Label>
+                    <Input
+                      id="edit_course_code"
+                      value={editCourse.course_code}
+                      onChange={e => setEditCourse(prev => prev ? { ...prev, course_code: e.target.value.toUpperCase() } : prev)}
+                      maxLength={16}
+                    />
                   </div>
-                </div>
-                {/* Course Units Form */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-semibold">Course Units</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setEditCourseUnits(prev => [...prev, { unit_number: prev.length + 1, unit_name: "", unit_description: "", assignment_count: 0, hours_per_unit: 1 }])}>
-                      <Plus className="h-4 w-4 mr-1" /> Add Unit
-                    </Button>
+                  <div>
+                    <Label htmlFor="edit_course_name">Course Name</Label>
+                    <Input
+                      id="edit_course_name"
+                      value={editCourse.course_name}
+                      onChange={e => setEditCourse(prev => prev ? { ...prev, course_name: e.target.value } : prev)}
+                    />
                   </div>
-                  <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {editCourseUnits.map((unit, index) => (
-                      <Card key={index} className="p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-medium">Unit {unit.unit_number}</h4>
-                          {editCourseUnits.length > 1 && (
-                            <Button type="button" variant="ghost" size="sm" onClick={() => setEditCourseUnits(prev => prev.filter((_, i) => i !== index))}>
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="space-y-3">
-                          <div>
-                            <Label htmlFor={`edit_unit_name_${index}`}>Unit Name</Label>
-                            <Input id={`edit_unit_name_${index}`} value={unit.unit_name} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, unit_name: e.target.value } : u))} />
-                          </div>
-                          <div>
-                            <Label htmlFor={`edit_unit_description_${index}`}>Unit Description</Label>
-                            <Textarea id={`edit_unit_description_${index}`} value={unit.unit_description} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, unit_description: e.target.value } : u))} rows={2} />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <Label htmlFor={`edit_hours_per_unit_${index}`}>Duration (hours)</Label>
-                              <Input id={`edit_hours_per_unit_${index}`} type="number" min="1" value={unit.hours_per_unit} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, hours_per_unit: parseInt(e.target.value) || 1 } : u))} />
-                            </div>
-                            <div>
-                              <Label htmlFor={`edit_assignment_count_${index}`}>Assignments</Label>
-                              <Input id={`edit_assignment_count_${index}`} type="number" min="0" value={unit.assignment_count} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, assignment_count: parseInt(e.target.value) || 0 } : u))} />
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                  <div>
+                    <Label htmlFor="edit_course_description">Course Description</Label>
+                    <Textarea
+                      id="edit_course_description"
+                      value={editCourse.course_description}
+                      onChange={e => setEditCourse(prev => prev ? { ...prev, course_description: e.target.value } : prev)}
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_course_start_date">Start Date</Label>
+                    <Input
+                      id="edit_course_start_date"
+                      type="date"
+                      value={editCourse.course_start_date}
+                      onChange={e => setEditCourse(prev => prev ? { ...prev, course_start_date: e.target.value } : prev)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_course_end_date">End Date</Label>
+                    <Input
+                      id="edit_course_end_date"
+                      type="date"
+                      value={editCourse.course_end_date}
+                      onChange={e => setEditCourse(prev => prev ? { ...prev, course_end_date: e.target.value } : prev)}
+                    />
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end space-x-2 pt-4">
+              {/* Course Units Section */}
+              <div className="bg-gray-50 rounded-lg p-6 shadow-sm border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Course Units</h3>
+                </div>
+                <div className="flex flex-col gap-6">
+                  {editCourseUnits.map((unit, index) => (
+                    <div key={index} className="border rounded-lg p-4 bg-white shadow-sm relative">
+                      {editCourseUnits.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={() => setEditCourseUnits(prev => prev.filter((_, i) => i !== index))}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <div className="flex items-center mb-2">
+                        <h4 className="font-medium text-base">Unit {unit.unit_number}</h4>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor={`edit_unit_name_${index}`}>Unit Name</Label>
+                          <Input id={`edit_unit_name_${index}`} value={unit.unit_name} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, unit_name: e.target.value } : u))} />
+                        </div>
+                        <div>
+                          <Label htmlFor={`edit_unit_description_${index}`}>Unit Description</Label>
+                          <Textarea id={`edit_unit_description_${index}`} value={unit.unit_description} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, unit_description: e.target.value } : u))} rows={2} />
+                        </div>
+                        <div>
+                          <Label htmlFor={`edit_hours_per_unit_${index}`}>Duration (hours)</Label>
+                          <Input id={`edit_hours_per_unit_${index}`} type="number" min="1" value={unit.hours_per_unit} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, hours_per_unit: parseInt(e.target.value) || 1 } : u))} />
+                        </div>
+                        <div>
+                          <Label htmlFor={`edit_assignment_count_${index}`}>Assignments</Label>
+                          <Input id={`edit_assignment_count_${index}`} type="number" min="0" value={unit.assignment_count} onChange={e => setEditCourseUnits(prev => prev.map((u, i) => i === index ? { ...u, assignment_count: parseInt(e.target.value) || 0 } : u))} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-6"
+                  onClick={() => setEditCourseUnits(prev => [...prev, { unit_number: prev.length + 1, unit_name: "", unit_description: "", assignment_count: 0, hours_per_unit: 1 }])}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Add Unit
+                </Button>
+              </div>
+              <div className="flex justify-end space-x-2 pt-6 bg-white sticky bottom-0 z-10 mt-4">
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleEditCourse}>Update Course</Button>
               </div>

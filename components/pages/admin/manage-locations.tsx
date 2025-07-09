@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Upload, Search, Building, Users, MapPin, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Search, Filter, Building, Users, MapPin, X } from 'lucide-react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useAuth } from '@/components/auth-provider';
 
@@ -533,14 +533,19 @@ export function ManageLocations() {
       </div>
 
       <div className="flex items-center space-x-2">
-        <Input
-          placeholder="Search courses..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
-        <Select value={locationTypeFilter} onValueChange={setLocationTypeFilter}>
-          <SelectTrigger className="w-[200px]">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            placeholder="Search locations..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-64"
+          />
+        </div>
+        <div className="relative">
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Select value={locationTypeFilter} onValueChange={setLocationTypeFilter}>
+          <SelectTrigger className="w-52 pl-10">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>
@@ -556,6 +561,7 @@ export function ManageLocations() {
             <SelectItem value="OTHER">Other</SelectItem>
           </SelectContent>
         </Select>
+        </div>
       </div>
 
         
@@ -566,7 +572,7 @@ export function ManageLocations() {
       ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {locations.map((location) => (
-            <Card key={location.id} className="overflow-hidden">
+            <Card key={location.id} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow border">
               {location.images.length > 0 && (
                 <div className="relative h-48 group bg-gray-50 flex items-center justify-center">
                   <Carousel className="w-full h-full">
