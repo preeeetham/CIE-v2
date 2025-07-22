@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
 
     // For faculty-assigned projects, check enrollment status
     if (project.type === "FACULTY_ASSIGNED") {
-      if (project.status !== "APPROVED") {
+      if (project.status !== "ONGOING") {
         return NextResponse.json({ 
-          error: "Project must be approved before students can apply" 
+          error: "Project must be ongoing before students can apply" 
         }, { status: 400 })
       }
 

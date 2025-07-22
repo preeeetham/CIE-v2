@@ -94,7 +94,7 @@ export async function PUT(
       },
     })
 
-    // If approved, check enrollment cap and update project status if needed
+    // If approved, update project status 
     if (status === "APPROVED") {
       const project = await prisma.project.findUnique({
         where: { id: projectRequest.project_id },
@@ -109,8 +109,17 @@ export async function PUT(
         // Count approved requests including this one
         const approvedCount = project.project_requests.length
 
-        // If we've reached the enrollment cap, set project to ONGOING
-        if (project.enrollment_cap && approvedCount >= project.enrollment_cap) {
+        // For student-proposed projects, set to ONGOING immediately when approved
+        // For faculty-assigned projects, check enrollment cap
+        if (project.type === "STUDENT_PROPOSED") {
+          await prisma.project.update({
+            where: { id: projectRequest.project_id },
+            data: { 
+              status: "ONGOING",
+            },
+          })
+        } else if (project.enrollment_cap && approvedCount >= project.enrollment_cap) {
+          // If we've reached the enrollment cap, set project to ONGOING
           await prisma.project.update({
             where: { id: projectRequest.project_id },
             data: { 
