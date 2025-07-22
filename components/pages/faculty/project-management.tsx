@@ -1129,7 +1129,7 @@ export function ProjectManagement() {
                           <span>Waiting for coordinator approval</span>
                         </div>
                       )}
-                      {project.status === "APPROVED" &&
+                      {project.status === "ONGOING" &&
                         project.enrollment_status === "NOT_STARTED" && (
                           <div className="mt-2 flex items-center text-sm text-green-600">
                             <Calendar className="h-4 w-4 mr-1" />
@@ -1249,7 +1249,7 @@ export function ProjectManagement() {
 
                     {/* Enrollment Management Buttons */}
                     <div className="space-y-2">
-                      {project.status === "APPROVED" &&
+                      {project.status === "ONGOING" &&
                         project.enrollment_status === "NOT_STARTED" && (
                           <Button
                             className="w-full"

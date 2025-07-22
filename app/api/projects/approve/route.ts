@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest) {
     const updatedProject = await prisma.project.update({
       where: { id: project_id },
       data: {
-        status: status as "APPROVED" | "REJECTED",
+        status: status === "APPROVED" ? "ONGOING" : "REJECTED",
         modified_by: userId,
         modified_date: new Date(),
         // You could add a notes field to the project model if needed

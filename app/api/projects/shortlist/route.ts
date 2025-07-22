@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     const user = await getUserById(userId)
     if (!user || user.role !== "FACULTY") {
-      return NextResponse.json({ error: "Access denied - Faculty only" }, { status: 403 })
+            return NextResponse.json({ error: "Access denied - Faculty only" }, { status: 403 })
     }
 
     const body = await request.json()
@@ -206,7 +206,7 @@ if __name__ == "__main__":
       console.log("Using Python path:", pythonPath);
       const { stdout, stderr } = await execAsync(`"${pythonPath}" "${scriptPath}"`, {
         cwd: process.cwd(),
-        timeout: 30000000, // 2 minutes timeout
+        timeout: 3000, // 2 minutes timeout
         env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
       })
 

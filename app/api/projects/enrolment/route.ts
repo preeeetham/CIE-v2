@@ -52,9 +52,9 @@ export async function PUT(request: NextRequest) {
       }, { status: 403 })
     }
 
-    if (project.status !== "APPROVED") {
+    if (project.status !== "ONGOING") {
       return NextResponse.json({ 
-        error: "Project must be approved before managing enrollment" 
+        error: "Project must be ongoing before managing enrollment" 
       }, { status: 400 })
     }
 
@@ -159,11 +159,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Faculty profile not found" }, { status: 404 })
     }
 
-    // Get faculty's approved projects that can have enrollment managed
+    // Get faculty's ongoing projects that can have enrollment managed
     const projects = await prisma.project.findMany({
       where: {
         created_by: userId,
-        status: "APPROVED",
+        status: "ONGOING",
         type: "FACULTY_ASSIGNED"
       },
       include: {

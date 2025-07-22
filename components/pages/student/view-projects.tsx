@@ -482,7 +482,7 @@ export function ViewProjects() {
 
   const availableProjects = projects.filter(project => 
     project.type === "FACULTY_ASSIGNED" && 
-    (project.status === "APPROVED") &&
+    (project.status === "ONGOING") &&
     project.created_by !== user?.id &&
     // Only show if enrollment is open or if student hasn't applied yet
     (project.enrollment_status === "OPEN" || 
