@@ -52,13 +52,14 @@ export function FacultyDashboard() {
       { id: "home", label: "Dashboard", icon: Home },
       { id: "courses", label: "Courses", icon: Users },
       { id: "locations", label: "Book Rooms", icon: MapPin },
-      { id: "calendar", label: "Calendar", icon: Calendar },
+
       { id: "projects", label: "Projects", icon: FolderOpen },
-      { id: "attendance", label: "Attendance", icon: ClipboardCheck },
       { id: "lab-components", label: "Lab Components", icon: Wrench },
       { id: "library", label: "Library", icon: BookOpen },
       { id: "opportunities", label: "Opportunities", icon: Briefcase }, // Added
       { id: "feedbacks", label: "Feedbacks", icon: BarChart3 }, // Add Feedbacks
+      { id: "attendance", label: "Attendance", icon: ClipboardCheck, disabled: true },
+      { id: "calendar", label: "Calendar", icon: Calendar, disabled: true },
     ]
 
     // Add CIE Coordinator section if user is a coordinator

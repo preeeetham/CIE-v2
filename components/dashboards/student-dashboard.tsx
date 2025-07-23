@@ -17,14 +17,14 @@ import { NotificationsPage } from "@/components/pages/common/notifications-page"
 
 const menuItems = [
   { id: "home", label: "Dashboard", icon: Home },
-  { id: "locations", label: "Class Locations", icon: MapPin },
   { id: "calendar", label: "Calendar", icon: Calendar },
   { id: "courses", label: "Courses", icon: BookOpen },
   { id: "projects", label: "Projects", icon: FolderOpen },
-  { id: "attendance", label: "Attendance", icon: ClipboardCheck },
   { id: "lab-components", label: "Lab Components", icon: Wrench },
   { id: "library", label: "Library", icon: BookOpen },
   { id: "opportunities", label: "Opportunities", icon: Briefcase },
+  { id: "attendance", label: "Attendance", icon: ClipboardCheck, disabled: true },
+  { id: "locations", label: "Class Locations", icon: MapPin, disabled: true },
 ]
 
 export function StudentDashboard() {

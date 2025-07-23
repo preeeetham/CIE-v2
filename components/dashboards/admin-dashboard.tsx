@@ -22,11 +22,11 @@ const menuItems = [
   { id: "faculty", label: "Faculty", icon: Briefcase },
   { id: "students", label: "Students", icon: Users },
   { id: "courses", label: "Courses", icon: BookOpen },
-  { id: "schedules", label: "Class Schedules", icon: Calendar },
   { id: "locations", label: "Room Bookings", icon: MapPin },
   { id: "lab-components", label: "Lab Components", icon: Wrench },
   { id: "library", label: "Library", icon: BookOpen },
   { id: "opportunities", label: "Opportunities", icon: Briefcase },
+  { id: "schedules", label: "Class Schedules", icon: Calendar, disabled: true },
 ]
 
 export function AdminDashboard() {
