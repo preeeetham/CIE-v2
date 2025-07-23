@@ -1693,13 +1693,13 @@ export function ManageLibrary() {
                         {specificationRows.map((row, index) => (
                           <div key={row.id} className="flex items-center space-x-2">
                             <Input
-                              placeholder="Attribute (e.g., Pages)"
+                              placeholder=""
                               value={row.attribute}
                               onChange={(e) => updateSpecificationRow(row.id, 'attribute', e.target.value)}
                               className="flex-1 h-8 text-sm"
                             />
                             <Input
-                              placeholder="Value (e.g., 500)"
+                              placeholder=""
                               value={row.value}
                               onChange={(e) => updateSpecificationRow(row.id, 'value', e.target.value)}
                               className="flex-1 h-8 text-sm"
@@ -1879,31 +1879,36 @@ export function ManageLibrary() {
           </Card>
         ) : (
           filteredItems.map((item) => (
-            <div key={item.id} className="admin-card rounded-xl shadow-sm border hover:shadow-md transition-shadow flex flex-col justify-between h-full">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Package className="h-5 w-5 text-gray-500" />
-                    <h3 className="text-lg font-semibold">{item.item_name}</h3>
+            <Card key={item.id} className="flex flex-col h-full hover:shadow-md transition-shadow duration-200">
+              <CardHeader className="p-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="flex items-center space-x-2 text-sm">
+                      <Package className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{item.item_name}</span>
+                    </CardTitle>
+                    <CardDescription className="text-xs">{item.item_category}</CardDescription>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setItemToView(item)
-                      setIsInfoDialogOpen(true)
-                    }}
-                    className="text-blue-600 hover:text-blue-700"
-                  >
-                    <Info className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-gray-400 hover:text-gray-600"
+                      onClick={() => {
+                        setItemToView(item)
+                        setIsInfoDialogOpen(true)
+                      }}
+                    >
+                      <Info className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Image Display with Fade Animation */}
+              <CardContent className="flex-grow flex flex-col p-3 pt-0">
+                <div className="space-y-3 flex-grow">
+                  {/* Image Display */}
                   {(item.imageUrl || item.backImageUrl) && (
-                    <div className="relative w-full h-48 shadow-lg hover:shadow-lg transition-shadow duration-100 rounded-lg overflow-hidden">
+                    <div className="relative w-full h-48">
                       {/* Front Image */}
                       <div 
                         className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out ${
@@ -1913,7 +1918,7 @@ export function ManageLibrary() {
                         <img
                           src={item.imageUrl || '/placeholder.jpg'}
                           alt={`Front view of ${item.item_name}`}
-                          className="w-full h-full object-contain rounded-lg bg-gray-50"
+                          className="w-full h-full object-contain rounded-md bg-gray-50"
                         />
                       </div>
                       {/* Back Image */}
@@ -1926,47 +1931,45 @@ export function ManageLibrary() {
                           <img
                             src={item.backImageUrl}
                             alt={`Back view of ${item.item_name}`}
-                            className="w-full h-full object-contain rounded-lg bg-gray-50"
+                            className="w-full h-full object-contain rounded-md bg-gray-50"
                           />
                         </div>
                       )}
                       {/* Navigation Buttons */}
                       {item.backImageUrl && (
                         <>
-                          {/* Show right arrow when on front image */}
                           {!imageStates[item.id] && (
                             <Button
                               variant="secondary"
                               size="icon"
-                              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white/80 hover:bg-white shadow-md z-10"
+                              className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/80 hover:bg-white shadow-sm z-10"
                               onClick={() => setImageStates(prev => ({ ...prev, [item.id]: true }))}
                             >
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-3 w-3" />
                             </Button>
                           )}
-                          {/* Show left arrow when on back image */}
                           {imageStates[item.id] && (
                             <Button
                               variant="secondary"
                               size="icon"
-                              className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-white/80 hover:bg-white shadow-md z-10"
+                              className="absolute left-1 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-white/80 hover:bg-white shadow-sm z-10"
                               onClick={() => setImageStates(prev => ({ ...prev, [item.id]: false }))}
                             >
-                              <ChevronLeft className="h-4 w-4" />
+                              <ChevronLeft className="h-3 w-3" />
                             </Button>
                           )}
                         </>
                       )}
-                      {/* Image Indicator */}
+                      {/* Image Indicators */}
                       {item.backImageUrl && (
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 z-10">
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1 z-10">
                           <div 
-                            className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                            className={`w-1 h-1 rounded-full transition-colors duration-300 ${
                               !imageStates[item.id] ? 'bg-white' : 'bg-white/50'
                             }`}
                           />
                           <div 
-                            className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
+                            className={`w-1 h-1 rounded-full transition-colors duration-300 ${
                               imageStates[item.id] ? 'bg-white' : 'bg-white/50'
                             }`}
                           />
@@ -1974,56 +1977,54 @@ export function ManageLibrary() {
                       )}
                     </div>
                   )}
+                  
+                  <div className="text-xs text-gray-700">
+                    <div className="flex justify-between items-center">
+                      <span><span className="font-medium">Total:</span> {item.item_quantity}</span>
+                      <span><span className="font-medium">Category:</span> {item.item_category}</span>
+                      <span className="text-gray-500"><span className="font-medium">Location:</span> {item.item_location}</span>
+                    </div>
+                  </div>
+                </div>
 
-                  {/* Item Details */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm font-bold text-gray-700">Total Quantity</p>
-                      <p>{item.item_quantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-700">Category</p>
-                      <p>{item.item_category}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-700">Location</p>
-                      <p>{item.item_location}</p>
-                    </div>
-                  </div>
+                <div className="mt-3">
                   {editMode && (
-                  <div className="flex justify-end space-x-2">
-                    <button
-                      onClick={() => {
-                        setEditingItem(item)
-                        setIsAddDialogOpen(true)
-                        // Set image previews if images exist
-                        if (item.imageUrl) {
-                          setFrontImagePreview(item.imageUrl)
-                        }
-                        if (item.backImageUrl) {
-                          setBackImagePreview(item.backImageUrl)
-                        }
-                      }}
-                      className="btn-edit"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        setItemToDelete(item)
-                        setIsDeleteDialogOpen(true)
-                      }}
-                      className="btn-delete"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Delete
-                    </button>
-                  </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs"
+                        onClick={() => {
+                          setEditingItem(item)
+                          setIsAddDialogOpen(true)
+                          if (item.imageUrl) {
+                            setFrontImagePreview(item.imageUrl)
+                          }
+                          if (item.backImageUrl) {
+                            setBackImagePreview(item.backImageUrl)
+                          }
+                        }}
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs text-red-600 hover:text-red-700"
+                        onClick={() => {
+                          setItemToDelete(item)
+                          setIsDeleteDialogOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
                   )}
                 </div>
               </CardContent>
-            </div>
+            </Card>
           ))
         )}
       </div>

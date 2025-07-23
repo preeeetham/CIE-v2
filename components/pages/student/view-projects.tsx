@@ -682,7 +682,7 @@ export function ViewProjects() {
                     <Label htmlFor="dueDate">Expected Completion Date</Label>
                     <Input
                       id="dueDate"
-                      type="datetime-local"
+                      type="date"
                       value={newProject.expected_completion_date}
                       onChange={(e) => setNewProject({ ...newProject, expected_completion_date: e.target.value })}
                     />

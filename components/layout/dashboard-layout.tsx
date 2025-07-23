@@ -51,6 +51,7 @@ interface DashboardLayoutProps {
     id: string
     label: string
     icon: React.ComponentType<any>
+    disabled?: boolean
   }>
 }
 
@@ -372,23 +373,32 @@ export function DashboardLayout({ children, currentPage, onPageChange, menuItems
               >
                 <button
                   className={cn(
-                    "w-full flex items-center p-3 transition-all duration-200 rounded-lg mx-1 transform hover:scale-105 focus:scale-105",
+                    "w-full flex items-center p-3 transition-all duration-200 rounded-lg mx-1",
                     sidebarCollapsed ? "justify-center px-2" : "px-4",
-                    currentPage === item.id
-                      ? "bg-indigo-200 text-indigo-800 font-medium shadow-sm"
-                      : "text-gray-800 hover:bg-blue-100 hover:text-indigo-800 dark:text-dark1"
+                    item.disabled 
+                      ? "text-gray-400 cursor-not-allowed opacity-50" 
+                      : currentPage === item.id
+                        ? "bg-indigo-200 text-indigo-800 font-medium shadow-sm transform hover:scale-105 focus:scale-105"
+                        : "text-gray-800 hover:bg-blue-100 hover:text-indigo-800 dark:text-dark1 transform hover:scale-105 focus:scale-105"
                   )}
                   onClick={() => {
-                    onPageChange(item.id)
-                    setSidebarOpen(false)
+                    if (!item.disabled) {
+                      onPageChange(item.id)
+                      setSidebarOpen(false)
+                    }
                   }}
                   title={sidebarCollapsed ? item.label : undefined}
+                  disabled={item.disabled}
                 >
                   <item.icon 
                     className={cn(
                       "h-5 w-5 transition-transform duration-300",
                       !sidebarCollapsed && "mr-3",
-                      currentPage === item.id ? "text-blue-600" : "text-gray-600 dark:text-dark1"
+                      item.disabled 
+                        ? "text-gray-400" 
+                        : currentPage === item.id 
+                          ? "text-blue-600" 
+                          : "text-gray-600 dark:text-dark1"
                     )} 
                   />
                   {!sidebarCollapsed && (
