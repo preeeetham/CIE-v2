@@ -344,6 +344,7 @@ body {
 }
 .student-card:hover, .admin-card:focus-within {
   box-shadow: 0 4px 16px 0 rgba(16,30,54,0.08);
+  background-color: #dff9ff;
 }
 .dark .student-card:not(.bg-green-50):not(.dark\:bg-green-50) {
   background: #283042;
