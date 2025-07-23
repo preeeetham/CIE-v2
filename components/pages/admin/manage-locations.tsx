@@ -781,81 +781,108 @@ export function ManageLocations() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {locations.map((location) => (
-            <Card key={location.id} className="overflow-hidden">
-              {location.images.length > 0 && (
-                <div className="relative h-48 group bg-gray-50 flex items-center justify-center">
-                  <Carousel className="w-full h-full">
-                    <CarouselContent>
-                      {location.images.map((image, index) => (
-                        <CarouselItem key={index} className="flex items-center justify-center h-48">
-                          <img
-                            src={image}
-                            alt={`${location.name} ${index + 1}`}
-                            className="w-full h-48 object-contain rounded"
-                          />
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    {location.images.length > 1 && (
-                      <div className="absolute inset-0 flex items-center justify-between px-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="pointer-events-auto bg-white/80 rounded-full">
-                          <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2" />
-                        </div>
-                        <div className="pointer-events-auto bg-white/80 rounded-full">
-                          <CarouselNext className="right-2 top-1/2 -translate-y-1/2" />
-                        </div>
-                      </div>
-                    )}
-                  </Carousel>
-                </div>
-              )}
-              
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{capitalizeWords(location.name)}</CardTitle>
-                    <p className="text-sm text-gray-600">{location.room_number}</p>
+            <Card key={location.id} className="flex flex-col h-full hover:shadow-md transition-shadow duration-200 group">
+              <CardHeader className="p-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="flex items-center space-x-2 text-sm">
+                      <Building className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{capitalizeWords(location.name)}</span>
+                    </CardTitle>
+                    <p className="text-xs text-gray-600">{location.room_number} • {location.location_type.replace('_', ' ')}</p>
                   </div>
-                  <Badge className={getLocationTypeColor(location.location_type)}>
-                    {location.location_type.replace('_', ' ')}
-                  </Badge>
+                  <div className="flex items-center space-x-1 flex-shrink-0">
+                    <Badge className={getLocationTypeColor(location.location_type) + " text-xs px-1 py-0.5"}>
+                      {location.is_available ? 'Available' : 'Booked'}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
-              
-              <CardContent className="space-y-3">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Building className="h-4 w-4" />
-                  <span>{capitalizeWords(location.building)}, {getOrdinal(location.floor)}</span>
-                  {location.wing && <span>- {location.wing}</span>}
-                </div>
-                
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Users className="h-4 w-4" />
-                  <span>Capacity: {location.capacity}</span>
-                </div>
-
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <MapPin className="h-4 w-4" />
-                  <span>{location.bookings?.length || 0} upcoming bookings</span>
-                </div>
-                
-                {location.description && (
-                  <p className="text-sm text-gray-600 line-clamp-2">{location.description}</p>
-                )}
-
-                <div className="flex items-center justify-between pt-2">
-                  {editMode ? (
-                    <div className="flex space-x-2">
-                      <button className="btn-edit flex items-center gap-2" onClick={() => openEditDialog(location)}>
-                        <Pencil className="h-5 w-5" /> Edit
-                      </button>
-                      <button className="btn-delete flex items-center gap-2" onClick={() => { setLocationToDelete(location); setDeleteDialogOpen(true); }}>
-                        <X className="h-5 w-5" /> Delete
-                      </button>
+              <CardContent className="flex-grow flex flex-col p-3 pt-0">
+                <div className="space-y-3 flex-grow">
+                  {/* Image Display */}
+                  {location.images.length > 0 && (
+                    <div className="relative w-full h-48">
+                      <Carousel className="w-full h-full">
+                        <CarouselContent>
+                          {location.images.map((image, index) => (
+                            <CarouselItem key={index} className="flex items-center justify-center h-48">
+                              <img
+                                src={image}
+                                alt={`${location.name} ${index + 1}`}
+                                className="w-full h-full object-contain rounded-md bg-gray-50"
+                              />
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        {/* Navigation Buttons */}
+                        {location.images.length > 1 && (
+                          <div className="absolute inset-0 flex items-center justify-between px-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="pointer-events-auto bg-white/80 rounded-full">
+                              <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 h-6 w-6" />
+                            </div>
+                            <div className="pointer-events-auto bg-white/80 rounded-full">
+                              <CarouselNext className="right-2 top-1/2 -translate-y-1/2 h-6 w-6" />
+                            </div>
+                          </div>
+                        )}
+                        {/* Image Indicators */}
+                        {location.images.length > 1 && (
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1 z-10">
+                            {location.images.map((_, index) => (
+                              <div 
+                                key={index}
+                                className="w-1 h-1 rounded-full bg-white/70"
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </Carousel>
                     </div>
-                  ) : null}
+                  )}
+                  
+                  <div className="text-xs text-gray-700">
+                    <div className="flex justify-between items-center mb-1">
+                      <span><span className="font-medium">Capacity:</span> {location.capacity}</span>
+                      <span><span className="font-medium">Floor:</span> {getOrdinal(location.floor)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span><span className="font-medium">Building:</span> {capitalizeWords(location.building)}</span>
+                      <span className="text-gray-500"><span className="font-medium">Bookings:</span> {location.bookings?.length || 0}</span>
+                    </div>
+                    {location.wing && (
+                      <div className="mt-1">
+                        <span><span className="font-medium">Wing:</span> {location.wing}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  {editMode && (
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs"
+                        onClick={() => openEditDialog(location)}
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-8 text-xs text-red-600 hover:text-red-700"
+                        onClick={() => { setLocationToDelete(location); setDeleteDialogOpen(true); }}
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './car
 import { Button } from './button';
 import { Input } from './input';
 import { Badge } from './badge';
-import { CheckSquare, Square, Plus, Trash2, Clock } from 'lucide-react';
+import { CheckSquare, Square, Plus, Trash2 } from 'lucide-react';
 
 interface TodoItem {
   id: string;
@@ -102,13 +102,6 @@ export function TodoList({ role = 'admin' }: TodoListProps) {
     }
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -187,10 +180,6 @@ export function TodoList({ role = 'admin' }: TodoListProps) {
                         <span className="text-lg">
                           <div className={`w-4 h-4 rounded-full ${getPriorityIcon(todo.priority)}`}></div>
                         </span>
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Clock className="h-3 w-3" />
-                          {formatTime(todo.createdAt)}
-                        </div>
                       </div>
                     </div>
                   </div>
