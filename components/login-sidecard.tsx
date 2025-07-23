@@ -6,17 +6,17 @@ const illustrations = [
   {
     src: "/login_illustration_1.mp4",
     alt: "Login Video 1",
-    text: "AI integrated to speed up daily activities!"
+    text: "AI integrations to speed up daily activities!"
   },
   {
     src: "/login_illustration_2.mp4",
     alt: "Login Video 2",
-    text: "Resume shortlisting based on LLMs!"
+    text: "Resume shortlisting through LLMs!"
   },
   {
     src: "/login_illustration_3.mp4",
     alt: "Login Video 3",
-    text: "A place where teachers and students can collaborate!"
+    text: "A place where faculty and students can collaborate!"
   }
 ];
 
